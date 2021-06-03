@@ -211,7 +211,15 @@ def register():
         cpwd = request.form['c_passwd']
         if not cpwd == pwd:
             return Ava_Leht("veateated/vale_parool.html")
-        pass
+        päring = "INSERT INTO KASUTAJAD (KASUTAJA, VÕTI) VALUES (\""
+        päring += usr + "\", "
+        päring += "MD5(CONCAT(" + usr + ", " + pwd + "))"
+        päring += ");"
+        cursor = mysql.connection.cursor()
+        cursor.execute(päring)
+        mysql.connection.commit()
+        cursor.close()
+        return redirect(url_for('login'))
     return Ava_Leht("leheküljed/registreeri.html")
 
 
