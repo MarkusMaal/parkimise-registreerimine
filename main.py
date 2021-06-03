@@ -258,12 +258,17 @@ def register():
 # veateated
 @app.errorhandler(404)
 def e404(e):
-    return Ava_Leht("veateated/404.html")
+    return Ava_Leht("veateated/404.html"), 404
+
+
+@app.errorhandler(400)
+def e404(e):
+    return Ava_Leht("veateated/400.html"), 400
 
 
 @app.errorhandler(500)
 def e500(e):
-    return Ava_Leht("veateated/500.html")
+    return Ava_Leht("veateated/500.html"), 500
 
 
 if __name__ == "__main__":
