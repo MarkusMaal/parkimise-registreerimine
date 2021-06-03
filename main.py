@@ -202,27 +202,6 @@ def logout():
     return Ava_Leht("leheküljed/logout.html")
 
 
-# registreeri uus kasutaja
-@app.route('/register', methods=['POST', 'GET'])
-def register():
-    if request.method == 'POST':
-        usr = request.form['user']
-        pwd = request.form['passwd']
-        cpwd = request.form['c_passwd']
-        if not cpwd == pwd:
-            return Ava_Leht("veateated/vale_parool.html")
-        päring = "INSERT INTO KASUTAJAD (KASUTAJA, VÕTI) VALUES (\""
-        päring += usr + "\", "
-        päring += "MD5(CONCAT(" + usr + ", " + pwd + "))"
-        päring += ");"
-        cursor = mysql.connection.cursor()
-        cursor.execute(päring)
-        mysql.connection.commit()
-        cursor.close()
-        return redirect(url_for('login'))
-    return Ava_Leht("leheküljed/registreeri.html")
-
-
 # logi sisse kasutajaga
 @app.route('/login', methods=['POST', "GET"])
 def login():
@@ -253,6 +232,27 @@ def login():
                                                    "href=\"/\">Tagasi avalehele</a> " +\
                                                     Ava_Dokument("küljendus/jalus.html")
     return Ava_Leht("leheküljed/login.html")
+
+
+# registreeri uus kasutaja
+@app.route("/register", methods=['POST', 'GET'])
+def register():
+    if request.method == 'POST':
+        usr = request.form['user']
+        pwd = request.form['passwd']
+        cpwd = request.form['passwd2']
+        if not cpwd == pwd:
+            return Ava_Leht("veateated/vale_parool.html")
+        päring = "INSERT INTO KASUTAJAD (KASUTAJA, VÕTI) VALUES (\""
+        päring += usr + "\", "
+        päring += "MD5(CONCAT(" + usr + ", " + pwd + "))"
+        päring += ");"
+        cursor = mysql.connection.cursor()
+        cursor.execute(päring)
+        mysql.connection.commit()
+        cursor.close()
+        return redirect(url_for('login'))
+    return Ava_Leht("leheküljed/registreeri.html")
 
 
 if __name__ == "__main__":
