@@ -245,7 +245,7 @@ def register():
             return Ava_Leht("veateated/vale_parool.html")
         päring = "INSERT INTO KASUTAJAD (KASUTAJA, VÕTI) VALUES (\""
         päring += usr + "\", "
-        päring += "MD5(CONCAT(" + usr + ", " + pwd + "))"
+        päring += "MD5(CONCAT(\"" + usr + "\", \"" + pwd + "\"))"
         päring += ");"
         cursor = mysql.connection.cursor()
         cursor.execute(päring)
