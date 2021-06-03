@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="et">
+  <head>
+    <style>
+      body {
+        background: #444;
+        color: white;
+      }
+
+      a {
+        color: #0ff;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      table {
+          width: 100%;
+      }
+      td {
+          padding: 20px;
+      }
+      td {
+          background: gray;
+          color: white;
+      }
+      th {
+          background: black;
+          color: white;
+      }
+      td:hover {
+        background: dimgray;
+      }
+
+      td.prefiks {
+        width: 50px;
+      }
+
+      input[type="text"], input[type="password"] {
+        width: 98%;
+      }
+
+      input[type="text"]:hover, input[type="password"]:hover {
+        background: gray;
+      }
+
+      input[type="submit"], input[type="text"], input[type="password"] {
+        padding: 10px;
+        border-radius: 15px;
+        border: solid;
+        border-width: 2px;
+        color: white;
+        background: dimgray;
+      }
+
+      input[type="submit"]:hover {
+        background: blue;
+      }
+
+    </style>
+    <meta charset="utf-8">
+    <title>Parkimine</title>
+    <script>
+      var kell = new Date();
+      var parkimisaeg = null;
+
+      function KaksKohta(number)
+      {
+          if (number < 10) {
+            return "0" + String(number);
+          } else {
+            return String(number);
+          }
+      }
+
+      function update()
+      {
+          kell = new Date();
+          var koolon = ":";
+          if (kell.getSeconds() % 2 == 0) {
+            koolon = " ";
+          }
+          if (parkimisaeg == null) {
+            document.getElementById("kell").innerHTML = "Praegune kellaaeg: " + KaksKohta(kell.getHours()) + koolon + KaksKohta(kell.getMinutes());
+          } else {
+            document.getElementById("kell").innerHTML = "Praegune kellaaeg: " + KaksKohta(kell.getHours()) + koolon + KaksKohta(kell.getMinutes()) + "<br/>" +
+                                                        "Parkimise algusaeg: " + KaksKohta(parkimisaeg.getHours()) + koolon + KaksKohta(parkimisaeg.getMinutes()) + "<br/>";
+          }
+      }
+      var x = window.setInterval(update, 1000);
+    </script>
+  </head>
+  <body>
+    <h1>Parkimine</h1>
+    <p id="kell">Praegune kellaaeg:</p>
