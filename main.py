@@ -171,16 +171,47 @@ def logout():
     return Ava_Leht("leheküljed/logout.html")
 
 
+# kustuta konto
+@app.route("/delaccount", methods=["POST", "GET"])
+def delaccount():
+    if len(session) > 0 and not session["admin"]:
+        if request.method == "POST":
+            passwd = request.form["passwd"]
+            confirm = request.form["confirm"]
+            cursor = mysql.connection.cursor()
+            cursor.execute('SELECT * FROM KASUTAJAD;')
+            tabel = cursor.fetchall()
+            usrid = 0
+            for i, id in enumerate(tabel):
+                if id[0] == session["kasutaja_id"]:
+                    usrid = i
+            realpass = tabel[usrid][2]
+            if hashlib.md5((session["username"] + passwd).encode('utf-8')).hexdigest() == realpass:
+                cursor.execute("DELETE FROM PARKIMINE WHERE KASUTAJA_ID = " + str(session["kasutaja_id"]) + ";")
+                mysql.connection.commit()
+                cursor.execute("DELETE FROM KASUTAJAD WHERE ID = " + str(session["kasutaja_id"]) + ";")
+                mysql.connection.commit()
+                cursor.close()
+                return redirect(url_for('logout'))
+        return Ava_Leht("leheküljed/kustuta_konto.html")
+    return redirect(url_for('index'))
+
+
 # uuenda parooli
 @app.route("/update_passwd", methods=["POST", "GET"])
 def update_pass():
     if len(session) > 0:
         if request.method == "POST":
-            usr_id = session["kasutaja_id"] - 1
+            cursor = mysql.connection.cursor()
+            cursor.execute('SELECT * FROM KASUTAJAD;')
+            tabel = cursor.fetchall()
+            usr_id = 0
+            for i, id in enumerate(tabel):
+                if id[0] == session["kasutaja_id"]:
+                    usr_id = i
             oldpass = request.form["oldpass"]
             newpass = request.form["passwd"]
             confirm = request.form["passwd2"]
-            cursor = mysql.connection.cursor()
             cursor.execute('SELECT * FROM KASUTAJAD;')
             kirjed = cursor.fetchall()
             if (kirjed[usr_id][2] == hashlib.md5((kirjed[usr_id][1] + oldpass).encode('utf-8')).hexdigest()) and (newpass == confirm):
