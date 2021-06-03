@@ -216,10 +216,11 @@ def update_pass():
             kirjed = cursor.fetchall()
             if (kirjed[usr_id][2] == hashlib.md5((kirjed[usr_id][1] + oldpass).encode('utf-8')).hexdigest()) and (newpass == confirm):
                 päring = "UPDATE KASUTAJAD SET VÕTI = \"" + hashlib.md5((kirjed[usr_id][1] + newpass).encode('utf-8')).hexdigest() +\
-                         "\" WHERE ID = " + str(usr_id + 1) + ";"
+                         "\" WHERE ID = " + str(session["kasutaja_id"]) + ";"
                 cursor.execute(päring)
                 mysql.connection.commit()
                 cursor.close()
+                return redirect(url_for('index'))
             else:
                 return Ava_Leht("veateated/vanauusparoolvale.html")
         return Ava_Leht("leheküljed/muuda_parooli.html")
