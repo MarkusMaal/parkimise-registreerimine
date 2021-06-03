@@ -135,7 +135,7 @@ def end():
 
 
 # lõpeta parkimine
-@app.route("/lopeta")
+@app.route("/lopeta", methods=["POST", "GET", ""])
 def lopeta():
     if len(session) > 0:
         cursor = mysql.connection.cursor()
@@ -161,7 +161,7 @@ def lisa():
         minu_parkimised = cursor.fetchall()
         aktiivne_parkimine = False
         parkimise_id = -1
-        numbrimärk = "999XXX"
+        numbrimärk = ""
         nimi = ""
         algusaeg = datetime.time(0, 0, 0)
         for parkimine in minu_parkimised:
@@ -187,21 +187,20 @@ def lisa():
                     cursor.close()
                     algusaeg = datetime.datetime.today()
                     return TöötleParkimiseLehte(numbrimärk, True, nimi) + '''
-                            <a href="/lopeta">Lõpeta parkimine</a>
-                        </form>
+                            </form><form action="/lopeta"><input type="submit" value="Lõpeta"></form>
+                        
                         ''' + "<script>parkimisaeg = new Date(" + str(datetime.date.today().year) + ", " + str(datetime.date.today().month)  + ", " + str(datetime.date.today().day) + ", " +\
                         str(algusaeg.hour) + ", " + str(algusaeg.minute) + ", " + str(algusaeg.second) + "); </script>"
             else:
                 return Ava_Leht("veateated/vale_nr.html")
         if not aktiivne_parkimine:
-            return TöötleParkimiseLehte("999XXX", False, nimi) + '''
+            return TöötleParkimiseLehte("", False, nimi) + '''
                 <input type="submit" value="Alusta"/>
             </form>
             '''
         else:
             return TöötleParkimiseLehte(numbrimärk, True, nimi) + '''
-                <a href="/lopeta">Lõpeta parkimine</a>
-            </form>
+                </form><form action="/lopeta"><input type="submit" value="Lõpeta"></form>
             ''' + "<script>parkimisaeg = new Date(" + str(datetime.date.today().year) + ", " + str(datetime.date.today().month) + ", " + str(datetime.date.today().day) + ", " +\
                         str(algusaeg.hour) + ", " + str(algusaeg.minute) + ", " + str(algusaeg.second) + "); </script>"
     else:
