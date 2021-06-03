@@ -5,7 +5,7 @@ import os, hashlib, datetime
 
 # serveri seadistamine
 app = Flask(__name__)
-serverport = 5000
+serverport = 4262
 serverhost = "localhost"
 
 # juhusliku võtme genereerimine
@@ -30,7 +30,7 @@ def Ava_Dokument(failinimi):
 
 
 def TöötleParkimiseLehte(numbrimärk, alustatud, nimi):
-    leht = Ava_Leht("uus_parkimine.html")
+    leht = Ava_Leht("leheküljed/uus_parkimine.html")
     leht = leht.replace("{0}", session["username"])
     leht = leht.replace("{1}", numbrimärk)
     leht = leht.replace("{3}", nimi)
@@ -42,7 +42,7 @@ def TöötleParkimiseLehte(numbrimärk, alustatud, nimi):
 
 
 def Ava_Leht(lehenimi):
-    return Ava_Dokument("päis.html") + Ava_Dokument(lehenimi) + Ava_Dokument("jalus.html")
+    return Ava_Dokument("küljendus/päis.html") + Ava_Dokument(lehenimi) + Ava_Dokument("küljendus/jalus.html")
 
 
 def kontrolli_sobivust(number):
@@ -72,9 +72,9 @@ def kontrolli_sobivust(number):
 @app.route("/")
 def index():
     if len(session) > 0:
-        out = Ava_Dokument("päis.html")
+        out = Ava_Dokument("küljendus/päis.html")
         out += "<p>Tere tulemast, " + session["username"] + "!</p>"
-        out += Ava_Dokument("private_h.html")
+        out += Ava_Dokument("küljendus/private_h.html")
         cursor = mysql.connection.cursor()
         cursor.execute('''SELECT * FROM PARKIMINE;''')
         kirjed = cursor.fetchall()
@@ -94,13 +94,13 @@ def index():
                         out += "<td>" + str(kirje[4]) + "</td>"
                     out += "</tr>"
                     kirjed_eksisteerivad = True
-            out += Ava_Dokument("private_f.html")
+            out += Ava_Dokument("küljendus/private_f.html")
         else:
             return redirect(url_for('lisa'))
-        out += Ava_Dokument("jalus.html")
+        out += Ava_Dokument("küljendus/jalus.html")
         return out
     else:
-        return Ava_Leht("public.html")
+        return Ava_Leht("leheküljed/public.html")
 
 
 # lõpeta parkimine
@@ -179,7 +179,7 @@ def lisa():
                         ''' + "<script>parkimisaeg = new Date(" + str(datetime.date.today().year) + ", " + str(datetime.date.today().month)  + ", " + str(datetime.date.today().day) + ", " +\
                         str(algusaeg.hour) + ", " + str(algusaeg.minute) + ", " + str(algusaeg.second) + "); </script>"
             else:
-                return Ava_Leht("vale_nr.html")
+                return Ava_Leht("leheküljed/vale_nr.html")
         if not aktiivne_parkimine:
             return TöötleParkimiseLehte("999XXX", False, nimi) + '''
                 <input type="submit" value="Alusta"/>
@@ -199,7 +199,20 @@ def lisa():
 @app.route('/logout')
 def logout():
     session.clear()
-    return Ava_Leht("logout.html")
+    return Ava_Leht("leheküljed/logout.html")
+
+
+# registreeri uus kasutaja
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+    if request.method == 'POST':
+        usr = request.form['user']
+        pwd = request.form['passwd']
+        cpwd = request.form['c_passwd']
+        if not cpwd == pwd:
+            return Ava_Leht("veateated/vale_parool.html")
+        pass
+    return Ava_Leht("leheküljed/registreeri.html")
 
 
 # logi sisse kasutajaga
@@ -212,10 +225,10 @@ def login():
         cursor.execute('''SELECT * FROM KASUTAJAD;''')
         kirjed = cursor.fetchall()
         if len(kirjed) == 0:
-            return Ava_Dokument("päis.html") + "<h2>Sisselogimine ebaõnnestus</h2><p>Andmebaasis puuduvad kasutajad. " \
+            return Ava_Dokument("küljendus/päis.html") + "<h2>Sisselogimine ebaõnnestus</h2><p>Andmebaasis puuduvad kasutajad. " \
                                                "Pöörduge administraatori poole.</p><a " \
                                                "href=\"/\">Tagasi avalehele</a> " +\
-                                                Ava_Dokument("jalus.html")
+                                                Ava_Dokument("küljendus/jalus.html")
         else:
             sisselogitud = False
             for kirje in kirjed:
@@ -227,11 +240,11 @@ def login():
             if sisselogitud:
                 return redirect(url_for('index'))
             else:
-                return Ava_Dokument("päis.html") + "<h2>Sisselogimine ebaõnnestus</h2><p>Vale kasutajanimi või " \
+                return Ava_Dokument("küljendus/päis.html") + "<h2>Sisselogimine ebaõnnestus</h2><p>Vale kasutajanimi või " \
                                                    "parool</p><a " \
                                                    "href=\"/\">Tagasi avalehele</a> " +\
-                                                    Ava_Dokument("jalus.html")
-    return Ava_Leht("login.html")
+                                                    Ava_Dokument("küljendus/jalus.html")
+    return Ava_Leht("leheküljed/login.html")
 
 
 if __name__ == "__main__":
