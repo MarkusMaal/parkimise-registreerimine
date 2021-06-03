@@ -5,7 +5,7 @@ import os, hashlib, datetime
 
 # serveri seadistamine
 app = Flask(__name__)
-serverport = 4262
+serverport = 5000
 serverhost = "localhost"
 
 # juhusliku võtme genereerimine
@@ -13,10 +13,18 @@ os.urandom(24)
 SECRET_KEY = '\xfd{H\xe5<\x95\xf9\xe3\x96.5\xd1\x01O<!\xd5\xa2\xa0\x9fR"\xa1\xa8'
 app.config['SECRET_KEY'] = SECRET_KEY
 
+if not os.path.exists("mysql.cnf"):
+    db_passwd = input("Sisestage andmebaasi parool: ")
+    f = open("mysql.cnf", "w", encoding="UTF-8")
+    f.write(db_passwd + "\n")
+    f.close()
+else:
+    db_passwd = open("mysql.cnf", "r", encoding="UTF-8").readlines()[0].strip()
+
 # MySQL serveriga ühendamine
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'majakaSS123'
+app.config['MYSQL_PASSWORD'] = db_passwd
 app.config['MYSQL_DB'] = 'parkimine'
 
 mysql = MySQL(app)
@@ -31,7 +39,7 @@ def Ava_Dokument(failinimi):
 
 def TöötleParkimiseLehte(numbrimärk, alustatud, nimi):
     leht = Ava_Leht("leheküljed/uus_parkimine.html")
-    leht = leht.replace("{0}", session["username"])
+    leht = leht.replace("{0}", AntiXSS(session["username"]))
     leht = leht.replace("{1}", numbrimärk)
     leht = leht.replace("{3}", nimi)
     if alustatud:
@@ -39,6 +47,12 @@ def TöötleParkimiseLehte(numbrimärk, alustatud, nimi):
     else:
         leht = leht.replace("{2}", "")
     return leht
+
+
+def AntiXSS(sõne):
+    sõne = sõne.replace("<", "&lt;")
+    sõne = sõne.replace(">", "&gt;")
+    return sõne.replace("\"", "&quot;")
 
 
 def Ava_Leht(lehenimi):
@@ -66,14 +80,13 @@ def kontrolli_sobivust(number):
         return True
 
 
-
 # avaleht
 # sisu muutub vastavalt sellele, kas kasutaja on sisse loginud või mitte
 @app.route("/")
 def index():
     if len(session) > 0:
         out = Ava_Dokument("küljendus/päis.html")
-        out += "<p>Tere tulemast, " + session["username"] + "!</p>"
+        out += "<p>Tere tulemast, " + AntiXSS(session["username"]) + "!</p>"
         out += Ava_Dokument("küljendus/private_h.html")
         cursor = mysql.connection.cursor()
         cursor.execute('''SELECT * FROM PARKIMINE;''')
@@ -179,7 +192,7 @@ def lisa():
                         ''' + "<script>parkimisaeg = new Date(" + str(datetime.date.today().year) + ", " + str(datetime.date.today().month)  + ", " + str(datetime.date.today().day) + ", " +\
                         str(algusaeg.hour) + ", " + str(algusaeg.minute) + ", " + str(algusaeg.second) + "); </script>"
             else:
-                return Ava_Leht("leheküljed/vale_nr.html")
+                return Ava_Leht("veateated/vale_nr.html")
         if not aktiivne_parkimine:
             return TöötleParkimiseLehte("999XXX", False, nimi) + '''
                 <input type="submit" value="Alusta"/>
@@ -200,6 +213,31 @@ def lisa():
 def logout():
     session.clear()
     return Ava_Leht("leheküljed/logout.html")
+
+
+# uuenda parooli
+@app.route("/update_passwd", methods=["POST", "GET"])
+def update_pass():
+    if len(session) > 0:
+        if request.method == "POST":
+            usr_id = session["kasutaja_id"] - 1
+            oldpass = request.form["oldpass"]
+            newpass = request.form["passwd"]
+            confirm = request.form["passwd2"]
+            cursor = mysql.connection.cursor()
+            cursor.execute('SELECT * FROM KASUTAJAD;')
+            kirjed = cursor.fetchall()
+            if (kirjed[usr_id][2] == hashlib.md5((kirjed[usr_id][1] + oldpass).encode('utf-8')).hexdigest()) and (newpass == confirm):
+                päring = "UPDATE KASUTAJAD SET VÕTI = \"" + hashlib.md5((kirjed[usr_id][1] + newpass).encode('utf-8')).hexdigest() +\
+                         "\" WHERE ID = " + str(usr_id + 1) + ";"
+                cursor.execute(päring)
+                mysql.connection.commit()
+                cursor.close()
+            else:
+                return Ava_Leht("veateated/vanauusparoolvale.html")
+        return Ava_Leht("leheküljed/muuda_parooli.html")
+    else:
+        return redirect(url_for('index'))
 
 
 # logi sisse kasutajaga
