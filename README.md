@@ -18,4 +18,15 @@ Tegemist on veebitarkvaraga, kus on võimalik registreeritud kasutajal alustada 
  * andmebaas.sql
     * andmebaasi eksport
  ***
- 
+ Näidiskasutajate sisselogimisinfo:
+ > Administraator:  
+ >U: `admin`\
+ >P: `admin`
+ >
+ > Näidiskasutaja 1:  
+ >U: `parkija1`\
+ >P: `1234`
+ >
+ > Näidiskasutaja 2:  
+ >U: `parkija2`\
+ >P: `abc123` 
