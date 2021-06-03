@@ -255,5 +255,16 @@ def register():
     return Ava_Leht("leheküljed/registreeri.html")
 
 
+# veateated
+@app.errorhandler(404)
+def e404(e):
+    return Ava_Leht("veateated/404.html")
+
+
+@app.errorhandler(500)
+def e500(e):
+    return Ava_Leht("veateated/500.html")
+
+
 if __name__ == "__main__":
     app.run(host=serverhost, port=serverport)
